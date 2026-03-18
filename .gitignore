@@ -1,0 +1,18 @@
+# Godot 4+
+.godot/
+
+# Mono / C#
+.mono/
+export_presets.cfg
+
+# Build output
+bin/
+obj/
+
+# User/editor-specific
+.vscode/
+.idea/
+
+# OS junk
+Thumbs.db
+.DS_Store
