@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://ccmfy5pbys4pp"]
+
+[ext_resource type="PackedScene" uid="uid://ddpqdwpii0rsf" path="res://scenes/player/player.tscn" id="1_elqb8"]
+
+[node name="Main" type="Node2D" unique_id=957964565]
+
+[node name="Player" parent="." unique_id=173887280 instance=ExtResource("1_elqb8")]
+
+[node name="Polygon2D" type="Polygon2D" parent="." unique_id=1560129314]
+position = Vector2(200, 0)
+polygon = PackedVector2Array(246, 79, 248, 217, 361, 210, 381, 135)
+
+[node name="Polygon2D2" type="Polygon2D" parent="." unique_id=1334143419]
+position = Vector2(-200, 0)
+polygon = PackedVector2Array(-587, -74, -594, 120, -451, 103, -421, 15, -479, -58)

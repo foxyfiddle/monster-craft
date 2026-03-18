@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://ddpqdwpii0rsf"]
+
+[ext_resource type="Script" uid="uid://ckcom1htaklub" path="res://scripts/player/PlayerController.cs" id="1_8afob"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_x7p2l"]
+size = Vector2(44, 44)
+
+[node name="Player" type="CharacterBody2D" unique_id=173887280]
+script = ExtResource("1_8afob")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1823355999]
+shape = SubResource("RectangleShape2D_x7p2l")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1378739828]
+position_smoothing_enabled = true
+rotation_smoothing_enabled = true
+
+[node name="Polygon2D" type="Polygon2D" parent="." unique_id=1023008959]
+polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
