@@ -5,6 +5,9 @@
 [node name="Main" type="Node2D" unique_id=957964565]
 
 [node name="Player" parent="." unique_id=173887280 instance=ExtResource("1_elqb8")]
+DashSpeed = 700.0
+DashDuration = 0.15
+DashCooldown = 0.3
 
 [node name="Polygon2D" type="Polygon2D" parent="." unique_id=1560129314]
 position = Vector2(200, 0)
