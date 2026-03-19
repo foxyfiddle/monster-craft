@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Runtime.CompilerServices;
 
 public partial class PlayerController : CharacterBody2D
 {
@@ -21,11 +22,36 @@ public partial class PlayerController : CharacterBody2D
 	[Export]
 	public float DashCooldown = 0.5f;
 
+	[Export]
+	public int AttackDamage = 1;
+
+	private Area2D attackArea;
+
 	private bool isDashing = false;
 	private float dashTimer = 0f;
 	private float DashCooldownTimer = 0f;
 	private Vector2 dashDirection =Vector2.Zero;
 
+
+	private void PerformAttack()
+	{
+		var bodies = attackArea.GetOverlappingBodies();
+
+		foreach (Node body in bodies)
+		{
+			if (body is Enemy enemy)
+			{
+				enemy.TakeDamage(AttackDamage);
+			}
+		}
+
+		GD.Print("Attack!");
+	}
+	
+	public override void _Ready()
+	{
+		attackArea = GetNode<Area2D>("AttackArea");
+	}
 
 	public override void _PhysicsProcess(double delta)
 	{
@@ -91,6 +117,11 @@ public partial class PlayerController : CharacterBody2D
 			Velocity = Velocity.MoveToward(Vector2.Zero, Friction * (float)delta);
 		}
 		
+		if (Input.IsActionJustPressed("attack"))
+		{
+			PerformAttack();
+		}
+
 		MoveAndSlide();
 	}
 }

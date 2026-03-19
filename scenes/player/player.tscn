@@ -5,6 +5,9 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_x7p2l"]
 size = Vector2(44, 44)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8afob"]
+size = Vector2(0.74999994, 0.75)
+
 [node name="Player" type="CharacterBody2D" unique_id=173887280]
 script = ExtResource("1_8afob")
 
@@ -17,3 +20,11 @@ rotation_smoothing_enabled = true
 
 [node name="Polygon2D" type="Polygon2D" parent="." unique_id=1023008959]
 polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
+
+[node name="AttackArea" type="Area2D" parent="." unique_id=1598758980]
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea" unique_id=1823170066]
+position = Vector2(18, 0)
+scale = Vector2(24, 24)
+shape = SubResource("RectangleShape2D_8afob")
