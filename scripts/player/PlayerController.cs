@@ -1,41 +1,137 @@
 using Godot;
 using System;
-using System.Runtime.CompilerServices;
 
 public partial class PlayerController : CharacterBody2D
 {
-	[Export]
-	public float MaxSpeed = 200f;
-	
-	[Export]
-	public float Acceleration = 1200f;
-	
-	[Export]
-	public float Friction = 1400f;
+	[Export] public float MaxSpeed = 200f;
+	[Export] public float Acceleration = 1200f;
+	[Export] public float Friction = 1400f;
 
-	[Export]
-	public float DashSpeed = 500f;
+	[Export] public float DashSpeed = 500f;
+	[Export] public float DashDuration = 0.2f;
+	[Export] public float DashCooldown = 0.5f;
 
-	[Export]
-	public float DashDuration = 0.2f;
+	[Export] public int AttackDamage = 1;
+	[Export] public float AttackOffset = 15f;
 
-	[Export]
-	public float DashCooldown = 0.5f;
+	private Area2D _attackArea;
 
-	[Export]
-	public int AttackDamage = 1;
+	private bool _isDashing = false;
+	private float _dashTimer = 0f;
+	private float _dashCooldownTimer = 0f;
 
-	private Area2D attackArea;
+	private Vector2 _dashDirection = Vector2.Zero;
+	private Vector2 _facingDirection = Vector2.Right;
+	private Vector2 _inputDirection = Vector2.Zero;
 
-	private bool isDashing = false;
-	private float dashTimer = 0f;
-	private float DashCooldownTimer = 0f;
-	private Vector2 dashDirection =Vector2.Zero;
+	public override void _Ready()
+	{
+		_attackArea = GetNode<Area2D>("AttackArea");
+		UpdateAttackAreaPosition();
+	}
 
+	public override void _PhysicsProcess(double delta)
+	{
+		float deltaF = (float)delta;
+
+		ReadInput();
+		UpdateFacingDirection();
+		UpdateTimers(deltaF);
+		HandleDash(deltaF);
+		HandleAttack();
+
+		MoveAndSlide();
+	}
+
+	private void ReadInput()
+	{
+		_inputDirection = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+	}
+
+	private void UpdateFacingDirection()
+	{
+		if (_inputDirection != Vector2.Zero)
+		{
+			_facingDirection = GetCardinalDirection(_inputDirection);
+			UpdateAttackAreaPosition();
+		}
+	}
+
+	private void UpdateTimers(float delta)
+	{
+		if (_dashCooldownTimer > 0f)
+		{
+			_dashCooldownTimer -= delta;
+		}
+
+		if (_isDashing)
+		{
+			_dashTimer -= delta;
+
+			if (_dashTimer <= 0f)
+			{
+				_isDashing = false;
+			}
+		}
+	}
+
+	private void HandleDash(float delta)
+	{
+		if (_isDashing)
+		{
+			Velocity = _dashDirection * DashSpeed;
+			return;
+		}
+
+		if (CanStartDash())
+		{
+			StartDash();
+			Velocity = _dashDirection * DashSpeed;
+			return;
+		}
+
+		ApplyMovement(delta);
+	}
+
+	private bool CanStartDash()
+	{
+		return Input.IsActionJustPressed("dash")
+			&& _dashCooldownTimer <= 0f
+			&& _inputDirection != Vector2.Zero;
+	}
+
+	private void StartDash()
+	{
+		_isDashing = true;
+		_dashTimer = DashDuration;
+		_dashCooldownTimer = DashCooldown;
+		_dashDirection = _inputDirection;
+	}
+
+	private void ApplyMovement(float delta)
+	{
+		if (_inputDirection != Vector2.Zero)
+		{
+			Vector2 targetVelocity = _inputDirection * MaxSpeed;
+			Velocity = Velocity.MoveToward(targetVelocity, Acceleration * delta);
+		}
+		else
+		{
+			Velocity = Velocity.MoveToward(Vector2.Zero, Friction * delta);
+		}
+	}
+
+	private void HandleAttack()
+	{
+		if (Input.IsActionJustPressed("attack"))
+		{
+			PerformAttack();
+		}
+	}
 
 	private void PerformAttack()
 	{
-		var bodies = attackArea.GetOverlappingBodies();
+		var bodies = _attackArea.GetOverlappingBodies();
 
 		foreach (Node body in bodies)
 		{
@@ -47,81 +143,19 @@ public partial class PlayerController : CharacterBody2D
 
 		GD.Print("Attack!");
 	}
-	
-	public override void _Ready()
+
+	private void UpdateAttackAreaPosition()
 	{
-		attackArea = GetNode<Area2D>("AttackArea");
+		_attackArea.Position = _facingDirection * AttackOffset;
 	}
 
-	public override void _PhysicsProcess(double delta)
+	private Vector2 GetCardinalDirection(Vector2 inputDirection)
 	{
-		Vector2 inputDirection = Vector2.Zero;
-
-		if (Input.IsActionPressed("ui_right"))
-			inputDirection.X += 1;
-
-		if (Input.IsActionPressed("ui_left"))
-			inputDirection.X -= 1;
-
-		if (Input.IsActionPressed("ui_down"))
-			inputDirection.Y += 1;
-
-		if (Input.IsActionPressed("ui_up"))
-			inputDirection.Y -= 1;
-
-		inputDirection = inputDirection.Normalized();
-
-		// Update timers
-		DashCooldownTimer -= (float)delta;
-
-		if (isDashing)
+		if (Mathf.Abs(inputDirection.X) > Mathf.Abs(inputDirection.Y))
 		{
-			dashTimer -= (float)delta;
-			Velocity = dashDirection * DashSpeed;
-
-			if (dashTimer <= 0)
-			{
-				isDashing = false;
-			}
-		}
-		else
-		{
-			// Start dash
-			if (Input.IsActionJustPressed("dash") && DashCooldownTimer <= 0 && inputDirection != Vector2.Zero)
-			{
-				isDashing = true;
-				dashTimer = DashDuration;
-				DashCooldownTimer = DashCooldown;
-				dashDirection = inputDirection;
-			}
-
-			// Normal movement
-			if (inputDirection != Vector2.Zero)
-			{
-				Vector2 targetVelocity = inputDirection * MaxSpeed;
-				Velocity = Velocity.MoveToward(targetVelocity, Acceleration * (float)delta);
-			}
-			else
-			{
-				Velocity = Velocity.MoveToward(Vector2.Zero, Friction * (float)delta);
-			}
-		}
-		
-		if (inputDirection != Vector2.Zero)
-		{
-			Vector2 targetVelocity = inputDirection * MaxSpeed;
-			Velocity = Velocity.MoveToward(targetVelocity, Acceleration * (float)delta);
-		}
-		else
-		{
-			Velocity = Velocity.MoveToward(Vector2.Zero, Friction * (float)delta);
-		}
-		
-		if (Input.IsActionJustPressed("attack"))
-		{
-			PerformAttack();
+			return inputDirection.X > 0 ? Vector2.Right : Vector2.Left;
 		}
 
-		MoveAndSlide();
+		return inputDirection.Y > 0 ? Vector2.Down : Vector2.Up;
 	}
 }
