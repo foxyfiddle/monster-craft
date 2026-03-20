@@ -3,6 +3,8 @@ using System;
 
 public partial class PlayerController : CharacterBody2D
 {
+
+// Variables	
 	[Export] public float MaxSpeed = 200f;
 	[Export] public float Acceleration = 1200f;
 	[Export] public float Friction = 1400f;
@@ -13,8 +15,10 @@ public partial class PlayerController : CharacterBody2D
 
 	[Export] public int AttackDamage = 1;
 	[Export] public float AttackOffset = 15f;
+	[Export] public float AttackCooldown = 0.3f;
 
 	private Area2D _attackArea;
+	private float _attackTimer = 0f;
 
 	private bool _isDashing = false;
 	private float _dashTimer = 0f;
@@ -24,6 +28,7 @@ public partial class PlayerController : CharacterBody2D
 	private Vector2 _facingDirection = Vector2.Right;
 	private Vector2 _inputDirection = Vector2.Zero;
 
+// Main logic
 	public override void _Ready()
 	{
 		_attackArea = GetNode<Area2D>("AttackArea");
@@ -43,6 +48,7 @@ public partial class PlayerController : CharacterBody2D
 		MoveAndSlide();
 	}
 
+// Direction logic
 	private void ReadInput()
 	{
 		_inputDirection = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
@@ -57,6 +63,7 @@ public partial class PlayerController : CharacterBody2D
 		}
 	}
 
+// Timers logic
 	private void UpdateTimers(float delta)
 	{
 		if (_dashCooldownTimer > 0f)
@@ -73,8 +80,14 @@ public partial class PlayerController : CharacterBody2D
 				_isDashing = false;
 			}
 		}
+
+		if (_attackTimer > 0f)
+		{
+			_attackTimer -= delta;
+		}
 	}
 
+// Dash logic
 	private void HandleDash(float delta)
 	{
 		if (_isDashing)
@@ -108,6 +121,7 @@ public partial class PlayerController : CharacterBody2D
 		_dashDirection = _inputDirection;
 	}
 
+// Movement logic
 	private void ApplyMovement(float delta)
 	{
 		if (_inputDirection != Vector2.Zero)
@@ -121,11 +135,27 @@ public partial class PlayerController : CharacterBody2D
 		}
 	}
 
+	private Vector2 GetCardinalDirection(Vector2 inputDirection)
+	{
+		if (Mathf.Abs(inputDirection.X) > Mathf.Abs(inputDirection.Y))
+		{
+			return inputDirection.X > 0 ? Vector2.Right : Vector2.Left;
+		}
+
+		return inputDirection.Y > 0 ? Vector2.Down : Vector2.Up;
+	}
+
+// Attack logic
 	private void HandleAttack()
 	{
 		if (Input.IsActionJustPressed("attack"))
 		{
-			PerformAttack();
+			if (CanAttack())
+			{
+				PerformAttack();
+				_attackTimer = AttackCooldown; // Cooldown for next attack
+			}
+			
 		}
 	}
 
@@ -149,13 +179,8 @@ public partial class PlayerController : CharacterBody2D
 		_attackArea.Position = _facingDirection * AttackOffset;
 	}
 
-	private Vector2 GetCardinalDirection(Vector2 inputDirection)
-	{
-		if (Mathf.Abs(inputDirection.X) > Mathf.Abs(inputDirection.Y))
-		{
-			return inputDirection.X > 0 ? Vector2.Right : Vector2.Left;
-		}
-
-		return inputDirection.Y > 0 ? Vector2.Down : Vector2.Up;
+	private bool CanAttack()
+	{ 
+		return _attackTimer <= 0f;
 	}
 }

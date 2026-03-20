@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://kqw1wv0yecdm" path="res://scenes/enemies/Enemy.tscn" id="2_rvslj"]
 
 [node name="Main" type="Node2D" unique_id=957964565]
+position = Vector2(-1, -1)
 
 [node name="Player" parent="." unique_id=173887280 instance=ExtResource("1_elqb8")]
 DashSpeed = 700.0

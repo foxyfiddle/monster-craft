@@ -14,14 +14,11 @@ script = ExtResource("1_8afob")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1823355999]
 shape = SubResource("RectangleShape2D_x7p2l")
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=1378739828]
-position_smoothing_enabled = true
-rotation_smoothing_enabled = true
-
 [node name="Polygon2D" type="Polygon2D" parent="." unique_id=1023008959]
 polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
 
 [node name="AttackArea" type="Area2D" parent="." unique_id=1598758980]
+position = Vector2(1, 0)
 monitorable = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea" unique_id=1823170066]
@@ -31,3 +28,7 @@ shape = SubResource("RectangleShape2D_8afob")
 [node name="Polygon2D" type="Polygon2D" parent="AttackArea/CollisionShape2D" unique_id=147065961]
 position = Vector2(-1.1666666, 0.125)
 polygon = PackedVector2Array(0.8750001, -0.375, 0.8750001, 0.125, 1.4166667, 0.125, 1.4166667, -0.375)
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1378739828]
+position_smoothing_enabled = true
+rotation_smoothing_enabled = true
