@@ -19,6 +19,9 @@ public partial class PlayerController : CharacterBody2D
 
 	private Area2D _attackArea;
 	private float _attackTimer = 0f;
+	private bool _isAttacking = false;
+	private float _attackDurationTimer = 0f;
+	private const float AttackDuration = 0.1f; // Duration of the attack hitbox active time
 
 	private bool _isDashing = false;
 	private float _dashTimer = 0f;
@@ -84,6 +87,16 @@ public partial class PlayerController : CharacterBody2D
 		if (_attackTimer > 0f)
 		{
 			_attackTimer -= delta;
+		}
+
+		if (_isAttacking)
+		{
+			_attackDurationTimer -= delta;
+
+			if (_attackDurationTimer <= 0f)
+			{
+				_isAttacking = false;
+			}
 		}
 	}
 
@@ -152,6 +165,8 @@ public partial class PlayerController : CharacterBody2D
 		{
 			if (CanAttack())
 			{
+				_isAttacking = true;
+				_attackDurationTimer = AttackDuration;
 				PerformAttack();
 				_attackTimer = AttackCooldown; // Cooldown for next attack
 			}
@@ -181,6 +196,6 @@ public partial class PlayerController : CharacterBody2D
 
 	private bool CanAttack()
 	{ 
-		return _attackTimer <= 0f;
+		return !_isAttacking && _attackTimer <= 0f;
 	}
 }
