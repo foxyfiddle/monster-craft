@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class PlayerController : CharacterBody2D
 {
@@ -16,12 +17,12 @@ public partial class PlayerController : CharacterBody2D
 	[Export] public int AttackDamage = 1;
 	[Export] public float AttackOffset = 15f;
 	[Export] public float AttackCooldown = 0.3f;
+	[Export] public float AttackDuration = 0.1f; // Duration of the attack hitbox active time
 
 	private Area2D _attackArea;
 	private float _attackTimer = 0f;
 	private bool _isAttacking = false;
 	private float _attackDurationTimer = 0f;
-	private const float AttackDuration = 0.1f; // Duration of the attack hitbox active time
 
 	private bool _isDashing = false;
 	private float _dashTimer = 0f;
@@ -31,10 +32,13 @@ public partial class PlayerController : CharacterBody2D
 	private Vector2 _facingDirection = Vector2.Right;
 	private Vector2 _inputDirection = Vector2.Zero;
 
+	private HashSet<Enemy> _enemiesHitThisAttack = new();
+
 // Main logic
 	public override void _Ready()
 	{
 		_attackArea = GetNode<Area2D>("AttackArea");
+		_attackArea.Monitoring = false; // Start with attack area disabled
 		UpdateAttackAreaPosition();
 	}
 
@@ -47,6 +51,11 @@ public partial class PlayerController : CharacterBody2D
 		UpdateTimers(deltaF);
 		HandleDash(deltaF);
 		HandleAttack();
+
+		if (_isAttacking)
+		{
+			CheckAttackHits();
+		}
 
 		MoveAndSlide();
 	}
@@ -96,6 +105,7 @@ public partial class PlayerController : CharacterBody2D
 			if (_attackDurationTimer <= 0f)
 			{
 				_isAttacking = false;
+				_attackArea.Monitoring = false;
 			}
 		}
 	}
@@ -167,26 +177,13 @@ public partial class PlayerController : CharacterBody2D
 			{
 				_isAttacking = true;
 				_attackDurationTimer = AttackDuration;
-				PerformAttack();
 				_attackTimer = AttackCooldown; // Cooldown for next attack
+				_attackArea.Monitoring = true;
+				_enemiesHitThisAttack.Clear(); // Clear the set of hit enemies for this attack
+				GD.Print("Start Attack!");
 			}
 			
 		}
-	}
-
-	private void PerformAttack()
-	{
-		var bodies = _attackArea.GetOverlappingBodies();
-
-		foreach (Node body in bodies)
-		{
-			if (body is Enemy enemy)
-			{
-				enemy.TakeDamage(AttackDamage);
-			}
-		}
-
-		GD.Print("Attack!");
 	}
 
 	private void UpdateAttackAreaPosition()
@@ -197,5 +194,19 @@ public partial class PlayerController : CharacterBody2D
 	private bool CanAttack()
 	{ 
 		return !_isAttacking && _attackTimer <= 0f;
+	}
+
+	private void CheckAttackHits()
+	{
+		var bodies = _attackArea.GetOverlappingBodies();
+
+		foreach (Node body in bodies)
+		{
+			if (body is Enemy enemy && !_enemiesHitThisAttack.Contains(enemy))
+			{
+				enemy.TakeDamage(AttackDamage);
+				_enemiesHitThisAttack.Add(enemy); // Mark this enemy as hit for this attack
+			}
+		}
 	}
 }
